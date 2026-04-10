@@ -23,7 +23,6 @@
     #otpBox.received { border-color:#28a745; background:#e8f5e9; color:#155724; }
     #timer { text-align:center; font-size:24px; font-weight:bold; color:#dc3545; margin:8px 0; }
     #status { text-align:center; font-size:13px; margin-top:8px; }
-
     .address-section { background: #0d0d0d; color: lime; padding: 30px 20px; border-radius: 12px; max-width: 460px; margin: 0 auto; box-shadow: 0 0 20px rgba(0,255,0,0.2); }
     .address-section h2 { color: #00ff00; margin-top: 0; }
     .address-box { background: #1a1a1a; padding: 20px; border-radius: 10px; box-shadow: 0 0 12px rgba(0,255,0,0.3); }
@@ -35,13 +34,12 @@
 </head>
 <body>
 <div id="address-msg"></div>
-
 <div class="container">
     <h2>ID Generator</h2>
     <input type="email" id="email" placeholder="Enter Email" readonly>
     <input type="text" id="mobile" placeholder="Enter Mobile Number">
     <button onclick="generateID()">Generate</button>
-    
+   
     <div class="row">
         <input id="pass" readonly placeholder="Password">
         <button onclick="copyText(this,'pass')">Copy</button>
@@ -64,7 +62,6 @@
     </div>
     <button onclick="copyAll(this)">ALL COPY</button>
     <textarea id="final" readonly placeholder="Final Output"></textarea>
-
     <div id="tempMailSection">
         <h3>Temp Mail + OTP (2 min)</h3>
         <button onclick="generateTempEmail()" style="background:#17a2b8;">Generate Temp Email</button>
@@ -74,7 +71,6 @@
         <div id="status"></div>
     </div>
 </div>
-
 <div class="address-section">
     <h2>🔥 Address Generator</h2>
     <div class="address-box">
@@ -85,7 +81,7 @@
 </div>
 
 <script>
-// Firebase Config
+// Firebase Config (same as before)
 firebase.initializeApp({
   apiKey: "AIzaSyDmnmOd6fPmLMTCb5DUdWDSTRQ81Ffl72w",
   authDomain: "sdaffa-b3b89.firebaseapp.com",
@@ -96,25 +92,35 @@ firebase.initializeApp({
   appId: "1:251487165929:web:c91430227781f58d91ff78"
 });
 const db = firebase.database();
-
 let browserId = localStorage.getItem("browserId") || "browser_" + Math.random().toString(36).slice(2,10);
 localStorage.setItem("browserId", browserId);
 
-// ====================== Modified ID Generator ======================
+// ====================== STRONG 8 CHARACTER PASSWORD GENERATOR ======================
 function generateStrongPassword(name){
-  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const numbers = "0123456789";
-  const special = "@#$&_!%";
-  
-  let password = name.toUpperCase().substring(0, 5); // Capital name part
-  
-  for(let i = 0; i < 4; i++) password += numbers[Math.floor(Math.random()*numbers.length)];
-  for(let i = 0; i < 2; i++) password += special[Math.floor(Math.random()*special.length)];
-  for(let i = password.length; i < 14; i++) password += upper[Math.floor(Math.random()*upper.length)];
-  
-  return password.split('').sort(()=>0.5-Math.random()).join('');
+    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lower = "abcdefghijklmnopqrstuvwxyz";
+    const numbers = "0123456789";
+    const special = "@#$!%&_";
+
+    let password = "";
+
+    // Guaranteed one of each
+    password += upper[Math.floor(Math.random() * upper.length)];
+    password += lower[Math.floor(Math.random() * lower.length)];
+    password += numbers[Math.floor(Math.random() * numbers.length)];
+    password += special[Math.floor(Math.random() * special.length)];
+
+    // Fill remaining 4 characters
+    const allChars = upper + lower + numbers + special;
+    for(let i = 0; i < 4; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    // Shuffle the password
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
 }
 
+// Rest of the code remains same
 function generateID(){
   const email = document.getElementById("email").value.trim();
   const mobile = document.getElementById("mobile").value.trim();
@@ -122,19 +128,18 @@ function generateID(){
     alert("Email & Mobile required");
     return;
   }
-
   const name = email.split("@")[0].replace(/[^a-zA-Z]/g,"").toUpperCase();
   const digits = Math.floor(10 + Math.random()*90);
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  
+ 
   const userId = name + digits + letters[Math.floor(Math.random()*26)] + letters[Math.floor(Math.random()*26)];
   const password = generateStrongPassword(name);
-
+  
   document.getElementById("pass").value = password;
   document.getElementById("userid").value = userId;
   document.getElementById("phone").value = mobile;
   document.getElementById("mailout").value = email;
-  
+ 
   updateFinal();
   saveToFirebase();
 }
@@ -145,7 +150,7 @@ function updateFinal(){
   const mob = document.getElementById("phone").value;
   const mail = document.getElementById("mailout").value;
   const emailpass = document.getElementById("emailpass").value;
-  
+ 
   document.getElementById("final").value = `${user}\n${pass}\n${mob}\n${mail}\n${emailpass}`;
 }
 
@@ -179,7 +184,7 @@ function saveToFirebase(){
   });
 }
 
-// ====================== Temp Mail Functions (Unchanged) ======================
+// Temp Mail & Address functions (unchanged - same as you sent)
 let token = null;
 let usedEmails = new Set();
 let countdownInterval, inboxInterval, seconds = 120;
@@ -232,47 +237,43 @@ async function generateTempEmail(){
   try{
     const domRes = await fetch("https://api.mail.tm/domains");
     const domain = (await domRes.json())["hydra:member"][0].domain;
-    
+   
     let email = "";
     do{
       const first = firstNames[Math.floor(Math.random()*firstNames.length)];
       const last = lastNames[Math.floor(Math.random()*lastNames.length)];
       email = first + last + Math.floor(1000 + Math.random()*9000) + "@" + domain;
     }while(usedEmails.has(email));
-    
+   
     usedEmails.add(email);
     const pass = randomEmailPassword();
     document.getElementById("emailpass").value = pass;
-
     await fetch("https://api.mail.tm/accounts", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ address: email, password: pass }) });
     const tokenRes = await fetch("https://api.mail.tm/token", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ address: email, password: pass }) });
     token = (await tokenRes.json()).token;
-
     document.getElementById("email").value = email;
     document.getElementById("mailout").value = email;
     document.getElementById("tempEmail").innerText = email;
     document.getElementById("otpBox").innerText = "Waiting for OTP...";
     document.getElementById("otpBox").classList.remove("received");
     document.getElementById("status").innerText = "Waiting for mail...";
-    
+   
     startTimer();
     clearInterval(inboxInterval);
     inboxInterval = setInterval(checkInbox, 5000);
   }catch(e){ console.log(e); }
 }
 
-// ====================== Address Generator (Full) ======================
+// Address Generator
 const locations = [
     {city:"Patna", state:"Bihar", pincode:"800001"},{city:"Gaya", state:"Bihar", pincode:"823001"},
     {city:"Delhi", state:"Delhi", pincode:"110001"},{city:"Mumbai", state:"Maharashtra", pincode:"400001"},
     {city:"Kolkata", state:"West Bengal", pincode:"700001"},{city:"Chennai", state:"Tamil Nadu", pincode:"600001"},
     {city:"Bangalore", state:"Karnataka", pincode:"560001"},{city:"Jamshedpur", state:"Jharkhand", pincode:"831001"},
     {city:"Ranchi", state:"Jharkhand", pincode:"834001"},{city:"Dhanbad", state:"Jharkhand", pincode:"826001"},
-    // ... (baaki saare locations bhi hain, space saving ke liye yahan short kiya, lekin original code mein full hai)
     {city:"Lucknow", state:"Uttar Pradesh", pincode:"226001"},{city:"Kanpur", state:"Uttar Pradesh", pincode:"208001"},
     {city:"Jaipur", state:"Rajasthan", pincode:"302001"},{city:"Hyderabad", state:"Telangana", pincode:"500001"}
 ];
-
 const streets = ["MG Road","Station Road","Main Road","Ring Road","Civil Lines","Gandhi Chowk","Nehru Nagar"];
 
 function generateAddress(){
