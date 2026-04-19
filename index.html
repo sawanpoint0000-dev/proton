@@ -135,7 +135,7 @@ function generateID(){
   const digits = Math.floor(10 + Math.random()*90);
   const letters = "abcdefghijklmnopqrstuvwxyz";
  
-  const userId = name + digits + letters[Math.floor(Math.random()*26)] + letters[Math.floor(Math.random()*26)];
+  const userId = name + "_" + Math.random().toString(36).substring(2,6) + Math.floor(10 + Math.random()*90);
   const password = generateStrongPassword(name);
   
   document.getElementById("pass").value = password;
