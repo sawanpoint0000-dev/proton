@@ -95,32 +95,51 @@ const db = firebase.database();
 let browserId = localStorage.getItem("browserId") || "browser_" + Math.random().toString(36).slice(2,10);
 localStorage.setItem("browserId", browserId);
 
-// ====================== STRONG 8 CHARACTER PASSWORD GENERATOR ======================
 function generateStrongPassword(name){
-    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const lower = "abcdefghijklmnopqrstuvwxyz";
     const numbers = "0123456789";
-    const special = "@#$!%&_";
+    const special = "@#$!%&_*~^%";
 
-    // Random length between 8 to 12
-    const length = Math.floor(Math.random() * 5) + 8;  // 8, 9, 10, 11, or 12
+    // clean name
+    let cleanName = name.replace(/[^a-zA-Z]/g, "").toLowerCase();
 
-    let password = "";
-
-    // Guaranteed at least one of each type
-    password += upper[Math.floor(Math.random() * upper.length)];
-    password += lower[Math.floor(Math.random() * lower.length)];
-    password += numbers[Math.floor(Math.random() * numbers.length)];
-    password += special[Math.floor(Math.random() * special.length)];
-
-    // Fill remaining characters
-    const allChars = upper + lower + numbers + special;
-    for(let i = 4; i < length; i++) {
-        password += allChars[Math.floor(Math.random() * allChars.length)];
+    // अगर name बहुत छोटा है तो fallback
+    if(cleanName.length < 3){
+        cleanName = "user";
     }
 
-    // Shuffle the password to make it more random
-    return password.split('').sort(() => 0.5 - Math.random()).join('');
+    // first letter capital
+    let first = cleanName.charAt(0).toUpperCase();
+
+    // बाकी नाम (small)
+    let remaining = cleanName.slice(1);
+
+    // base password
+    let base = first + remaining;
+
+    // target length (8–12)
+    let targetLength = Math.floor(Math.random() * 5) + 8;
+
+    let extra = "";
+
+    // ensure number + special
+    extra += numbers[Math.floor(Math.random() * numbers.length)];
+    extra += special[Math.floor(Math.random() * special.length)];
+
+    const allChars = lower + numbers + special;
+
+    // fill बाकी length
+    while ((base + extra).length < targetLength) {
+        extra += allChars[Math.floor(Math.random() * allChars.length)];
+    }
+
+    let finalPass = base + extra;
+
+    // shuffle except first char
+    let firstChar = finalPass.charAt(0);
+    let बाकी = finalPass.slice(1).split('').sort(() => 0.5 - Math.random()).join('');
+
+    return firstChar + बाकी;
 }
 
 // Rest of the code remains same
